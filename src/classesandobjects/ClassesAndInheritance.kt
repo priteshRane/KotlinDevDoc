@@ -4,18 +4,109 @@ import javax.naming.Context
 import javax.swing.text.AttributeSet
 
 fun main() {
-    InitOrderDemo("Kotlin")
-    Customer("Max")
-    DerivedInitOrder("Max", "Nicole")
+    println("Classes example")
+    classesExample()
+    println()
+
+    println("Primary constructor example")
+    primaryConstructorExample()
+    println()
+
+    println("Secondary constructor example")
+    secondaryConstructorExample()
+    println()
+
+    println("Inheritance example")
+    inheritanceExample()
+    println()
+
+    println("Overriding methods example")
+    overridingMethodsExample()
+    println()
+
+    println("Overriding properties example")
+    overridingPropertiesExample()
+    println()
+
+    println("Abstract classes example")
+    abstractClassesExample()
+    println()
+
+    println("Derived class initialization order example")
+    derivedClassInitOrderExample()
+    println()
+
+    println("Overriding rules example")
+    overridingRulesExample()
+    println()
+
+    println("Calling the superclass implementation example")
+    filledRectangleExample()
+    println()
 }
 
-class Invoice {}
+fun classesExample() {
+    Invoice()
+    Empty()
+}
+
+fun primaryConstructorExample() {
+    PersonWithConstructorKeyword("Max")
+    PersonWithoutConstructorKeyword("Max")
+    InitOrderDemo("Max")
+    Customer("Max")
+    // DontCreateMe // Error: Classifier 'DontCreateMe' does not have a companion object, and thus must be initialized here
+}
+
+fun secondaryConstructorExample() {
+    // PersonWithSecondaryConstructor()
+    PersonWithDelegationSecondaryConstructor("Max")
+    Constructors(10)
+}
+
+fun inheritanceExample() {
+
+}
+
+fun overridingMethodsExample() {
+
+}
+
+fun overridingPropertiesExample() {
+
+}
+
+fun derivedClassInitOrderExample() {
+    DerivedInitOrder("Max", "Rock")
+}
+
+fun filledRectangleExample() {
+    FilledRectangle().draw()
+    println("Filled rectangle fill color: ${FilledRectangle().fillColor}")
+    InnerRectangle().Filler().fill()
+    InnerRectangle().Filler().drawAndFill()
+}
+
+fun overridingRulesExample() {
+    Square().draw()
+}
+
+fun abstractClassesExample() {
+    val rectangle = object: RectangleAbstract() {
+        override fun draw() {
+            println("Draw rectangle")
+        }
+    }
+    rectangle.draw()
+}
+
+class Invoice { }
 
 class Empty
 
-class PersonWithConstructor constructor(firstName: String) {}
+class PersonWithConstructorKeyword constructor(firstName: String) { }
 
-class PersonWithoutConstructor(firstName: String) {}
+class PersonWithoutConstructorKeyword(firstName: String) { }
 
 class InitOrderDemo(name: String) {
     val firstProperty = "First property: $name".also(::println)
@@ -33,28 +124,18 @@ class InitOrderDemo(name: String) {
 
 class Customer(name: String) {
     val customerKey = name.toUpperCase()
-
-    init {
-        println("customer key: $customerKey")
-    }
 }
 
-class Person(val firstName: String, val lastName: String, var age: Int)
-
-// class CustomerAnnotationsOrVisibilityModifiers public @Inject constructor(name: String) { }
-
-class PersonSecondary {
-    var children: MutableList<PersonSecondary> = mutableListOf<PersonSecondary>()
-
-    constructor(parent: PersonSecondary) {
+class PersonWithSecondaryConstructor {
+    var children: MutableList<PersonWithSecondaryConstructor> = mutableListOf<PersonWithSecondaryConstructor>()
+    constructor(parent: PersonWithSecondaryConstructor) {
         parent.children.add(this)
     }
 }
 
-class PersonSecondaryWithParam(val name: String) {
-    var children: MutableList<PersonSecondaryWithParam> = mutableListOf<PersonSecondaryWithParam>()
-
-    constructor(name: String, parent: PersonSecondaryWithParam) : this(name) {
+class PersonWithDelegationSecondaryConstructor(val name: String) {
+    var children: MutableList<PersonWithDelegationSecondaryConstructor> = mutableListOf<PersonWithDelegationSecondaryConstructor>()
+    constructor(name: String, parent: PersonWithDelegationSecondaryConstructor) : this(name) {
         parent.children.add(this)
     }
 }
@@ -69,45 +150,11 @@ class Constructors {
     }
 }
 
-class DontCreateMe private constructor() {}
-
-class CustomerJVM(val customerName: String = "")
+class DontCreateMe private constructor () { }
 
 open class Base(p: Int)
 
 class Derived(p: Int) : Base(p)
-
-open class View(ctx: Context, attrs: AttributeSet)
-
-class MyView : View {
-
-    constructor(ctx: Context, attrs: AttributeSet) : super(ctx, attrs)
-}
-
-open class Shape {
-    open fun draw() {}
-    fun fill() {}
-    open val vertexCount: Int = 0
-}
-
-class Circle() : Shape() {
-    override fun draw() {}
-    override val vertexCount = 4
-}
-
-open class Rectangle() : Shape() {
-    final override fun draw() { }
-}
-
-interface ShapeInheritance {
-    val vertexCount: Int
-}
-
-class RectangleForInheritance(override val vertexCount: Int = 4) : ShapeInheritance // Always has 4 vertices
-
-class Polygon : ShapeInheritance {
-    override var vertexCount: Int = 0  // Can be set to any number later
-}
 
 open class BaseInitOrder(val name: String) {
 
@@ -126,4 +173,55 @@ class DerivedInitOrder(
 
     override val size: Int =
             (super.size + lastName.length).also { println("Initializing size in Derived: $it") }
+}
+
+open class RectangleSuper {
+    open fun draw() { println("Drawing a rectangle") }
+    val borderColor: String get() = "black"
+}
+
+class FilledRectangle : RectangleSuper() {
+    override fun draw() {
+        super.draw()
+        println("Filling the rectangle")
+    }
+
+    val fillColor: String get() = super.borderColor
+}
+
+class InnerRectangle : RectangleSuper() {
+//    fun draw() { /* ... */ }
+//    val borderColor: String get() = "black"
+
+    inner class Filler {
+        fun fill() { println("Fill() in Filler inner class of InnerRectangle") }
+        fun drawAndFill() {
+            super@InnerRectangle.draw()
+            fill()
+            println("Drawn a filled rectangle with color ${super@InnerRectangle.borderColor}")
+        }
+    }
+}
+
+open class RectangleRule {
+    open fun draw() {  println("Rectangle rule draw") }
+}
+
+interface PolygonRule {
+    fun draw() { println("Polygon rule draw") }
+}
+
+class Square() : RectangleRule(), PolygonRule {
+    override fun draw() {
+        super<RectangleRule>.draw()
+        super<PolygonRule>.draw()
+    }
+}
+
+open class Polygon {
+    open fun draw() { println("Draw polygon") }
+}
+
+abstract class RectangleAbstract : Polygon() {
+    abstract override fun draw()
 }
